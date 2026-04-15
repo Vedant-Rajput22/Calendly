@@ -7,8 +7,16 @@ const ASSIGNMENT_DEFAULT_USER_ID =
   process.env.ASSIGNMENT_DEFAULT_USER_ID || "default-user-id";
 
 export async function ANY(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
-  const session = await getServerSession(authOptions);
   const resolvedParams = await params;
+  let sessionUserId: string | null = null;
+
+  try {
+    const session = await getServerSession(authOptions);
+    sessionUserId = (session?.user as any)?.id || null;
+  } catch (error) {
+    // In assignment mode, auth/session issues should not break proxy requests.
+    console.warn("Proxy session lookup failed, using assignment fallback user.");
+  }
   
   // The path array will be ['auth', 'event-types'] -> join with '/'
   const targetPath = resolvedParams.path ? resolvedParams.path.join('/') : '';
@@ -22,8 +30,8 @@ export async function ANY(req: NextRequest, { params }: { params: Promise<{ path
   headers.delete("host");
   
   // Inject the validated User ID from NextAuth
-  if (session?.user && (session.user as any).id) {
-    headers.set("x-user-id", (session.user as any).id);
+  if (sessionUserId) {
+    headers.set("x-user-id", sessionUserId);
   } else {
     // Assignment mode fallback: simulate default logged-in admin user
     headers.set("x-user-id", ASSIGNMENT_DEFAULT_USER_ID);

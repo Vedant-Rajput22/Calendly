@@ -1,8 +1,9 @@
-import { Router, Request, Response, NextFunction } from "express";
+import { Prisma } from "@prisma/client";
+import { NextFunction, Request, Response, Router } from "express";
 import prisma from "../lib/prisma";
 import {
-  createEventTypeSchema,
-  updateEventTypeSchema,
+    createEventTypeSchema,
+    updateEventTypeSchema,
 } from "../schemas/validation";
 
 const router = Router();
@@ -64,6 +65,15 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
     });
     res.status(201).json(eventType);
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2002") {
+        return res.status(409).json({ error: "Event type with this value already exists" });
+      }
+      if (error.code === "P2003") {
+        return res.status(400).json({ error: "Invalid user context for creating event type" });
+      }
+    }
+    console.error("Error creating event type:", error);
     res.status(500).json({ error: "Failed to create event type" });
   }
 });
