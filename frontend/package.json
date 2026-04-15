@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
-    "dev:lowmem": "set NODE_OPTIONS=--max-old-space-size=2048&& next dev --webpack",
-    "build": "next build --webpack",
+    "prisma:generate": "prisma generate --schema ../backend/prisma/schema.prisma",
+    "dev": "npm run prisma:generate; next dev --webpack",
+    "dev:lowmem": "npm run prisma:generate; set NODE_OPTIONS=--max-old-space-size=2048&& next dev --webpack",
+    "build": "npm run prisma:generate; next build --webpack",
     "start": "next start",
     "lint": "eslint"
   },
@@ -33,6 +34,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.3",
     "postcss": "^8.5.9",
+    "prisma": "^7.7.0",
     "tailwindcss": "^4.2.2",
     "typescript": "^5"
   }
