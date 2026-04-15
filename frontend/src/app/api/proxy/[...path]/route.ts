@@ -6,7 +6,7 @@ const EXPRESS_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:300
 const ASSIGNMENT_DEFAULT_USER_ID =
   process.env.ASSIGNMENT_DEFAULT_USER_ID || "default-user-id";
 
-export async function ANY(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+async function handleRequest(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   const resolvedParams = await params;
   let sessionUserId: string | null = null;
 
@@ -72,5 +72,23 @@ export async function ANY(req: NextRequest, { params }: { params: Promise<{ path
   }
 }
 
-export { ANY as DELETE, ANY as GET, ANY as PATCH, ANY as POST, ANY as PUT };
+export async function GET(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {
+  return handleRequest(req, ctx);
+}
+
+export async function POST(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {
+  return handleRequest(req, ctx);
+}
+
+export async function PUT(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {
+  return handleRequest(req, ctx);
+}
+
+export async function PATCH(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {
+  return handleRequest(req, ctx);
+}
+
+export async function DELETE(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {
+  return handleRequest(req, ctx);
+}
 
