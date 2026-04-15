@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "prisma:generate": "prisma generate --schema ../backend/prisma/schema.prisma --generator client_frontend",
-    "postinstall": "npm run prisma:generate",
+    "prisma:prepare": "npm install --prefix ../backend --no-save @prisma/client prisma",
+    "prisma:generate": "npm run prisma:prepare && prisma generate --schema ../backend/prisma/schema.prisma --generator client_frontend",
     "dev": "npm run prisma:generate; next dev --webpack",
     "dev:lowmem": "npm run prisma:generate; set NODE_OPTIONS=--max-old-space-size=2048&& next dev --webpack",
     "build": "npm run prisma:generate; next build --webpack",
