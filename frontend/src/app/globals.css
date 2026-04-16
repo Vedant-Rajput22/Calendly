@@ -338,6 +338,8 @@
 }
 
 .react-calendar__month-view__weekdays {
+  display: grid !important;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   text-transform: uppercase;
   font-weight: 600;
   font-size: 11px;
@@ -345,6 +347,16 @@
   abbr {
     text-decoration: none;
   }
+}
+
+.react-calendar__month-view__weekdays__weekday {
+  text-align: center;
+  padding: 0.45rem 0;
+}
+
+.react-calendar__month-view__days {
+  display: grid !important;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 
 .react-calendar__month-view__days__day {
@@ -363,6 +375,7 @@
   aspect-ratio: 1/1;
   max-width: 36px !important;
   margin: 2px auto !important;
+  justify-self: center;
   transition: background-color 0.1s ease, color 0.1s ease;
   color: var(--color-text) !important;
   font-size: 14px;
