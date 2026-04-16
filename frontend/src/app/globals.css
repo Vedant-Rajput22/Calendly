@@ -241,7 +241,7 @@
   }
 
   .cal-toggle {
-    @apply relative h-6 w-10 rounded-full transition-colors;
+    @apply relative inline-block h-6 w-10 rounded-full align-middle transition-colors;
     background-color: #d2dce8;
   }
 

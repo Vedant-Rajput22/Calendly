@@ -1,22 +1,84 @@
-# Calendly - Calendly Clone
+# Scheduling Platform (Calendly Clone)
 
-Calendly Clone is a full-stack scheduling platform built for the SDE Intern assignment.
+SDE Intern Fullstack Assignment submission. This project replicates Calendly-style scheduling flows, UI patterns, and booking interactions with a full-stack architecture.
+
+## Live Links
+
+- Frontend (Vercel): https://calendly-sepia-nine.vercel.app
+- Backend API (Render): https://calendly-24r9.onrender.com
+- Health Check: https://calendly-24r9.onrender.com/api/health
 
 ## Tech Stack
 
 - Frontend: Next.js 16 (App Router), TypeScript
-- Backend: Nodejs + Express 5 , TypeScript
-- Database: PostgreSQL + Prisma
-- Security and hardening: Helmet, compression, express-rate-limit
-- Optional integrations: SMTP email, callback, Google Calendar + Meet
+- Backend: Node.js + Express 5, TypeScript
+- Database: PostgreSQL (Neon) + Prisma
+- Security: Helmet, compression, express-rate-limit
+- Integrations: Google OAuth + Google Calendar/Meet, SMTP email notifications
+
+## Assignment Compliance
+
+### Core Features (Must Have)
+
+1. Event Types Management
+
+- Create event types with name, duration, and slug
+- Edit/delete event types
+- List event types in dashboard
+- Unique public booking link per event type (`/[slug]`)
+
+2. Availability Settings
+
+- Weekly day-wise availability
+- Time windows per day
+- Timezone configuration
+
+3. Public Booking Page
+
+- Calendar date selection
+- Available slots per selected date
+- Invitee form (name, email, optional custom fields)
+- Double-booking prevention
+- Booking confirmation page
+
+4. Meetings Page
+
+- Upcoming meetings
+- Past meetings
+- Cancellation flow
+
+### Bonus Features (Implemented)
+
+- Responsive design (mobile/tablet/desktop)
+- Multiple availability windows per day
+- Date override hours / blocked dates
+- Reschedule flow
+- Email notifications (booking + cancellation)
+- Buffer time before/after meetings
+- Custom invitee questions
+- Google Calendar sync + Meet link generation
 
 ## Project Structure
 
-- `frontend`: Next.js app with admin and public booking UI
-- `backend`: Express API, Prisma schema, migrations/seed scripts
-- `docs/ASSIGNMENT_CHECKLIST.md`: requirement status + step-by-step understanding tracker
+- `frontend/`: Next.js application (admin + public booking UI)
+- `backend/`: Express API, Prisma schema/migrations/seed
+- `docs/`: screenshots and ER-Diagram
 
-## Setup
+## Architecture
+
+- Frontend is deployed on Vercel
+- Backend is deployed on Render Web Service
+- Database is Neon PostgreSQL
+- Frontend communicates with backend via `/api/proxy/[...path]` and direct backend API URL
+
+Request flow:
+
+1. User interacts with frontend (Vercel)
+2. Frontend invokes backend endpoints
+3. Backend validates logic + writes/reads PostgreSQL
+4. Optional integrations trigger (email, Google Calendar)
+
+## Local Setup
 
 ### 1) Backend
 
@@ -25,37 +87,34 @@ cd backend
 npm install
 ```
 
-Create `.env` in `backend`:
+Create `backend/.env`:
 
 ```env
-DATABASE_URL=postgresql://user:password@localhost:5432/calendly
+DATABASE_URL=postgresql://<runtime-pooled-url>
+DIRECT_DATABASE_URL=postgresql://<direct-url-for-migrations>
 PORT=3001
 FRONTEND_URL=http://localhost:3000
 
-# Optional integrations
+GOOGLE_CLIENT_ID="..."
+GOOGLE_CLIENT_SECRET="..."
+GOOGLE_CALENDAR_REFRESH_TOKEN="..." # optional
+
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
 HOST_EMAIL=host@example.com
 
-# Google Calendar / Meet support for backend sync
-GOOGLE_CLIENT_ID="..."
-GOOGLE_CLIENT_SECRET="..."
-# Optional but recommended for assignment no-login mode:
-# fallback refresh token used to create Google Calendar events + Meet links
-GOOGLE_CALENDAR_REFRESH_TOKEN="your_google_oauth_refresh_token"
 ```
 
-Run Prisma:
+Run migrations and seed:
 
 ```bash
-npm run prisma:generate
-npm run prisma:migrate
+npx prisma migrate deploy
 npm run seed
 ```
 
-Start API:
+Start backend:
 
 ```bash
 npm run dev
@@ -68,95 +127,70 @@ cd frontend
 npm install
 ```
 
-Create `.env.local` in `frontend`:
+Create `frontend/.env.local`:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:3001/api
+DATABASE_URL=postgresql://<same-db-or-frontend-auth-db-url>
 
-# Assignment mode (no login required admin simulation via proxy)
-ASSIGNMENT_DEFAULT_USER_ID=default-user-id
-
-# Needed only if you want login/Google OAuth UI flows
 NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=replace-with-random-secret
+NEXTAUTH_SECRET=replace-with-strong-secret
+
 GOOGLE_CLIENT_ID="..."
 GOOGLE_CLIENT_SECRET="..."
+
+ASSIGNMENT_DEFAULT_USER_ID=default-user-id
 ```
 
-Start web app:
+Start frontend:
 
 ```bash
 npm run dev
 ```
 
-## Core Pages
+## Deployment Guide (Current Setup)
 
-- `/dashboard`: event type card grid, active toggle, copy link, create/delete
-- `/availability`: weekly availability + timezone + date overrides + multiple daily windows
-- `/meetings`: upcoming/past tabs, organizer/invitee visibility, cancellation
-- `/[slug]`: public booking page with calendar, slots, booking form, and rescheduling support
-- `/booking-confirmed/[bookingId]`: confirmation details and Google Calendar link
-- `/cancel/[cancelToken]`: invitee self-service cancel or reschedule
+### Frontend (Vercel)
 
-## Screenshots
+- Root directory: `frontend`
+- Framework: Next.js
+- Build command: `npm run build`
+- Install command: `npm install`
 
-The following screenshots illustrate key user flows and platform capabilities.
+Required Vercel env vars:
 
-### Landing Page (`/`)
+- `NEXT_PUBLIC_API_URL=https://calendly-24r9.onrender.com/api`
+- `NEXTAUTH_URL=https://calendly-sepia-nine.vercel.app`
+- `NEXTAUTH_SECRET=<strong-random-secret>`
+- `DATABASE_URL=<postgres-url>`
+- `GOOGLE_CLIENT_ID=<...>`
+- `GOOGLE_CLIENT_SECRET=<...>`
+- `ASSIGNMENT_DEFAULT_USER_ID=default-user-id`
 
-![Landing Page](docs/screenshots/01-homepage.png)
+### Backend (Render)
 
-### Dashboard - Event Types (`/dashboard`)
+- Service type: Web Service
+- Root directory: `backend`
+- Build command:
 
-![Dashboard Event Types](docs/screenshots/02-dashboard-event-types.png)
+```bash
+npm install && npx prisma migrate deploy && npm run prisma:generate && npm run build
+```
 
-### Availability - Weekly Hours (`/availability`)
+- Start command:
 
-![Availability Weekly Hours](docs/screenshots/03-availability-weekly-hours.png)
+```bash
+npm run start
+```
 
-### Availability - Date Overrides (`/availability`)
+Required Render env vars:
 
-![Availability Date Overrides](docs/screenshots/04-availability-date-overrides.png)
-
-### Meetings - Upcoming (`/meetings`)
-
-![Meetings Upcoming](docs/screenshots/05-meetings-upcoming.png)
-
-### Public Booking Page (`/[slug]`)
-
-![Public Booking Page](docs/screenshots/06-public-booking-page.png)
-
-### Booking Confirmed (`/booking-confirmed/[bookingId]`)
-
-![Booking Confirmed](docs/screenshots/07-booking-confirmed.png)
-
-### Cancel or Reschedule (`/cancel/[cancelToken]`)
-
-![Cancel or Reschedule](docs/screenshots/08-cancel-reschedule.png)
-
-### Settings - Google Calendar (`/settings`)
-
-![Settings Google Calendar](docs/screenshots/09-settings-google-calendar.png)
-
-### Confirmation Email
-
-![Confirmation Email](docs/screenshots/10-confirmation-email.png)
-
-### Google Calendar Event Created
-
-![Google Calendar Scheduled Event](docs/screenshots/11-google-calendar-scheduled.png)
-
-## Bonus Features Implemented
-
-- Backend hardening via Helmet, compression, rate limits
-- Public cancel/reschedule flow via cancel token
-- Cancellation email notifications (invitee + host) when SMTP is configured
-- Buffer-time fields in event type form and slot filtering
-- SMTP email notifications (invitee + host) when configured
-- Date overrides admin section
-- Multiple availability schedules (multiple time windows per day)
-- Custom invitee questions (company, phone, notes)
-- Google Calendar event sync + Google Meet link capture when a valid refresh token is available
+- `DATABASE_URL`
+- `DIRECT_DATABASE_URL`
+- `FRONTEND_URL=https://calendly-sepia-nine.vercel.app`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `HOST_EMAIL` (if email is enabled)
 
 ## API Routes
 
@@ -181,45 +215,72 @@ The following screenshots illustrate key user flows and platform capabilities.
 - `PATCH /api/bookings/cancel-token/:cancelToken/reschedule`
 - `GET /api/health`
 
-## Schema Diagram (ERD-style)
+## Core Screens
 
-```text
-User (1) ---- (N) EventType ---- (N) Booking
-  |                 |
-  |                 +---- fields: bufferBeforeMins, bufferAfterMins
-  |
-  +---- (N) Availability ---- (N) AvailabilityWindow
-  |
-  +---- (N) DateOverride
-  |
-  +---- (N) Account
-  |
-  +---- (N) Session
+- `/dashboard`: event type management
+- `/availability`: weekly hours + timezone + date overrides
+- `/meetings`: upcoming/past meetings + cancel actions
+- `/[slug]`: public booking page
+- `/booking-confirmed/[bookingId]`: confirmation details
+- `/cancel/[cancelToken]`: cancel/reschedule flow
 
-VerificationToken (standalone token table)
-```
+## ER Diagram
 
-## Design Decisions
+![ER Diagram](docs/ER-Diagram.png)
 
-- Slot generation runs in this sequence:
-  1. Validate event type and requested date
-  2. Resolve date override (blocked/custom hours) before weekly rules
-  3. Resolve one or more daily availability windows
-  4. Generate interval slots by `durationMins` across each window
-  5. Filter overlaps against confirmed bookings
-  6. Apply buffer windows before/after slots
-  7. Remove past slots
-- Double booking prevention:
-  - Booking creation is wrapped in a DB transaction
-  - Overlap rows are queried with `FOR UPDATE` lock semantics before insert
-- Rate limiting:
-  - Global API limiter is enabled for all `/api/*` routes
+## UI Screenshots
+### 1) Landing Page (`/`)
+
+![Landing Page](docs/screenshots/01-landing-page.png)
+
+### 2) Dashboard - Event Types (`/dashboard`)
+
+![Dashboard Event Types](docs/screenshots/02-dashboard-event-types.png)
+
+### 3) Availability - Weekly Hours (`/availability`)
+
+![Availability Weekly Hours](docs/screenshots/03-availability-weekly-hours.png)
+
+### 4) Availability - Date Overrides (`/availability`)
+
+![Availability Date Overrides](docs/screenshots/04-availability-date-overrides.png)
+
+### 5) Meetings - Upcoming (`/meetings`)
+
+![Meetings Upcoming](docs/screenshots/05-meetings-upcoming.png)
+
+### 6) Public Booking Page (`/[slug]`)
+
+![Public Booking Page](docs/screenshots/06-public-booking-page.png)
+
+### 7) Booking Confirmation (`/booking-confirmed/[bookingId]`)
+
+![Booking Confirmation](docs/screenshots/07-booking-confirmation.png)
+
+### 8) Cancel or Reschedule (`/cancel/[cancelToken]`)
+
+![Cancel or Reschedule](docs/screenshots/08-cancel-or-reschedule.png)
+
+### 9) Settings - Google Calendar (`/settings`)
+
+![Google Calendar Settings](docs/screenshots/09-settings-google-calendar.png)
+
+### 10) Confirmation Email
+
+![Confirmation Email](docs/screenshots/10-confirmation-email.png)
+
+### 11) Google Calendar Event
+
+![Google Calendar Event](docs/screenshots/11-google-calendar-event.png)
+
+## Design Notes
+
+- Slot generation includes timezone handling, availability windows, date overrides, overlap filtering, and buffer filtering.
+- Double-booking prevention is handled with transactional checks + locking semantics before create.
+- Admin side supports assignment mode (no-login default user simulation) as required.
 
 ## Assumptions
 
-- Admin side supports assignment mode by simulating a logged-in default user when no session exists
-- Time is persisted in UTC; UI displays local timezone values
-- SMTP are optional and fail gracefully when not configured
-- Google Meet generation is best-effort and requires at least one valid Google refresh token source:
-  - per-user connected Google account, or
-  - backend `GOOGLE_CALENDAR_REFRESH_TOKEN` fallback (recommended for no-login assignment mode)
+- No-login admin mode uses `ASSIGNMENT_DEFAULT_USER_ID` as fallback.
+- Timestamps are persisted in UTC, displayed with relevant timezone context.
+- SMTP and Google sync are optional and fail gracefully when not configured.
