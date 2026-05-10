@@ -1,6 +1,6 @@
 # Scheduling Platform (Calendly Clone)
 
-SDE Intern Fullstack Assignment submission. This project replicates Calendly-style scheduling flows, UI patterns, and booking interactions with a full-stack architecture.
+This project replicates Calendly-style scheduling flows, UI patterns, and booking interactions with a full-stack architecture.
 
 ## Live Links
 
